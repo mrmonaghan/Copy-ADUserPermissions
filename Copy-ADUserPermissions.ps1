@@ -82,6 +82,8 @@ Function Copy-ADUserPermissions {
             $UserResultObject = [PSCustomObject]@{
                 UPN = $User.SamAccountName
                 Status = $null
+                DiffGroup = $null
+                SourceOrTarget = $null
             }
             $TargetUserGroupMembership = Get-ADPrincipalGroupMembership $User
             $Comparison = Compare-Object -ReferenceObject $SourceGroups -DifferenceObject $TargetUserGroupMembership
@@ -90,8 +92,8 @@ Function Copy-ADUserPermissions {
                 }
             else {
                 $UserResultObject.Status = 'Error'
-                $UserResultObject | Add-Member -NotePropertyName 'DiffGroup' -NotePropertyValue $Comparison.InputObject.name
-                $UserResultObject | Add-Member -NotePropertyName 'Source/Target' -NotePropertyValue $Comparison.SideIndicator
+                $UserResultObject.DiffGroup = $Comparison.InputObject.name
+                $UserResultObject.SourceOrTarget = $Comparison.SideIndicator
                 }
             $ResultsArray.Add($UserResultObject)
         }
