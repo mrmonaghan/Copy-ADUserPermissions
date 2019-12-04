@@ -1,30 +1,22 @@
 <#
  .Synopsis
   Copies Active Directory group membership from a user to one or more other users.
-
  .Description
   Copies Active Directory group membership from a user to one or more other users.
-
  .Parameter From
   Selects the user to copy group membership from.
-
  .Parameter To
   Selects the user or users to apply copied group membership to.
-
  .Parameter OverwriteExisting
   Removes user from all existing groups except for Domain Users before applying new membership.
-
  .Parameter ShowErrors
   Displays errors encountered by the cmdlet during the process block as part of the output.
-
  .Example
    # Copy permissions from UserA to UserB
    Copy-ADUserPermissions -From UserA -To UserB
-
  .Example
    # Copy permissions from UserA to UserB and UserC
    Copy-ADUserPermissions -From UserA -To UserB, UserC
-
  .Example
    # Copy permissions from UserA to UserB and remove UserB's previous group membership
    Copy-ADUserPermissions -From UserA -To UserB -OverwriteExisting
@@ -82,8 +74,6 @@ Function Copy-ADUserPermissions {
             $UserResultObject = [PSCustomObject]@{
                 UPN = $User.SamAccountName
                 Status = $null
-                DiffGroup = $null
-                SourceOrTarget = $null
             }
             $TargetUserGroupMembership = Get-ADPrincipalGroupMembership $User
             $Comparison = Compare-Object -ReferenceObject $SourceGroups -DifferenceObject $TargetUserGroupMembership
@@ -92,8 +82,8 @@ Function Copy-ADUserPermissions {
                 }
             else {
                 $UserResultObject.Status = 'Error'
-                $UserResultObject.DiffGroup = $Comparison.InputObject.name
-                $UserResultObject.SourceOrTarget = $Comparison.SideIndicator
+                $UserResultObject | Add-Member -NotePropertyName 'DiffGroup' -NotePropertyValue $Comparison.InputObject.name
+                $UserResultObject | Add-Member -NotePropertyName 'Source/Target' -NotePropertyValue $Comparison.SideIndicator
                 }
             $ResultsArray.Add($UserResultObject)
         }
